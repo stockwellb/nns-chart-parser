@@ -1,0 +1,16 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+title: "Chord Schema"
+description: "Schema for a chord element."
+type: object
+properties:
+  degree:
+    description: "The chord's scale degree."
+    type: integer
+    minimum: 1
+  quality:
+    description: "Chord quality: 'major', 'minor', 'sus2', 'sus4', 'aug', or 'dim'."
+    type: string
+    enum: ["major", "minor", "sus2", "sus4", "aug", "dim"]
+required:
+  - degree
+  - quality
