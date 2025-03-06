@@ -1,0 +1,73 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+title: "Chart Schema"
+description: "Schema for a complete musical chart, starting with a line of chord elements."
+type: object
+
+definitions:
+  chord:
+    type: object
+    properties:
+      degree:
+        description: "The chord's scale degree."
+        type: integer
+        minimum: 1
+      quality:
+        description: "Chord quality: 'major', 'minor', 'sus2', 'sus4', 'aug', or 'dim'."
+        type: string
+        enum: ["major", "minor", "sus2", "sus4", "aug", "dim"]
+    required:
+      - degree
+      - quality
+
+  chordDef:
+    type: object
+    properties:
+      chord:
+        $ref: "#/definitions/chord"
+    required:
+      - chord
+
+  measure:
+    type: object
+    properties:
+      type:
+        const: "measure"
+      content:
+        type: array
+        items:
+          $ref: "#/definitions/chordDef"
+        minItems: 1
+
+  repeat:
+    type: object
+    properties:
+      type:
+        const: "repeat"
+      content:
+        type: string
+        enum: ["begin", "end"]
+    required:
+      - type
+      - content
+
+  spacer:
+    type: object
+    properties:
+      type:
+        const: "spacer"
+    required:
+      - type
+
+properties:
+  line:
+    type: array
+    description: "A sequence of musical elements (measures, repeats, and spacers)."
+    items:
+      oneOf:
+        - $ref: "#/definitions/measure"
+        - $ref: "#/definitions/repeat"
+        - $ref: "#/definitions/spacer"
+    minItems: 1
+
+required:
+  - line
