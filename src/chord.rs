@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub enum ChordQuality {
     #[serde(rename = "major")]
     Major,
@@ -16,7 +16,7 @@ pub enum ChordQuality {
     Dim,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct Chord {
     pub degree: i32,
     pub quality: ChordQuality,

@@ -1,4 +1,5 @@
 use crate::chord::{Chord, ChordQuality};
+use crate::measure::Measure;
 use anyhow::Result;
 use svg::node::element::{Group, Rectangle, Text};
 use svg::node::Text as TextNode;
@@ -6,6 +7,7 @@ use svg::Document;
 
 pub const SVG_WIDTH: i32 = 800;
 pub const SVG_HEIGHT: i32 = 400;
+pub const CHORD_SPACING: i32 = 100;
 
 #[derive(Clone, Copy)]
 pub enum NotationType {
@@ -46,6 +48,15 @@ impl ChordRenderer {
     pub fn render_chord(&mut self, chord: &Chord, x: i32, y: i32) -> &mut Self {
         let chord_group = self.create_chord_group(chord, x, y);
         self.document = self.document.clone().add(chord_group);
+        self
+    }
+
+    pub fn render_measure(&mut self, measure: &Measure, x: i32, y: i32) -> &mut Self {
+        let mut current_x = x;
+        for chord in measure.get_chords() {
+            self.render_chord(chord, current_x, y);
+            current_x += CHORD_SPACING;
+        }
         self
     }
 

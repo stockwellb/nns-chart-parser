@@ -1,4 +1,6 @@
 use nns_chart_parser::{
+    chord::{Chord, ChordQuality},
+    measure::Measure,
     parser::ChordParser,
     renderer::{ChordRenderer, SVG_HEIGHT, SVG_WIDTH},
 };
@@ -126,4 +128,39 @@ fn test_save_to_invalid_path() {
 
     let result = renderer.save("/invalid/path/test.svg");
     assert!(result.is_err());
+}
+
+#[test]
+fn test_render_measure() {
+    let test_dir = TestDir::new("measure");
+    let output_path = test_dir.path.join("output.svg");
+
+    let chords = vec![
+        Chord {
+            degree: 1,
+            quality: ChordQuality::Major,
+        },
+        Chord {
+            degree: 4,
+            quality: ChordQuality::Major,
+        },
+        Chord {
+            degree: 5,
+            quality: ChordQuality::Major,
+        },
+    ];
+    let measure = Measure::with_chords(chords);
+
+    let mut renderer = ChordRenderer::new();
+    renderer
+        .init_background()
+        .render_measure(&measure, 100, 200);
+
+    renderer.save(output_path.to_str().unwrap()).unwrap();
+
+    // Check file content
+    let content = fs::read_to_string(&output_path).unwrap();
+    assert!(content.contains("1")); // First chord
+    assert!(content.contains("4")); // Second chord
+    assert!(content.contains("5")); // Third chord
 }

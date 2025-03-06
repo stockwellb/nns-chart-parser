@@ -1,0 +1,11 @@
+---
+measure:
+  - chord:
+      degree: 1
+      quality: major
+  - chord:
+      degree: 4
+      quality: major
+  - chord:
+      degree: 5
+      quality: major
