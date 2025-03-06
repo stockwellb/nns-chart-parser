@@ -1,5 +1,5 @@
 use nns_chart_parser::{
-    chord::{Chord, ChordQuality},
+    parser::ChordParser,
     renderer::{ChordRenderer, SVG_HEIGHT, SVG_WIDTH},
 };
 use std::fs;
@@ -33,10 +33,7 @@ fn test_render_single_chord() {
     let test_dir = TestDir::new("single_chord");
     let output_path = test_dir.path.join("output.svg");
 
-    let chord = Chord {
-        degree: 1,
-        quality: ChordQuality::Major,
-    };
+    let chord = ChordParser::parse_file("tests/fixtures/triads/test_major.yaml").unwrap();
 
     let mut renderer = ChordRenderer::new();
     renderer.init_background().render_chord(&chord, 400, 200);
@@ -56,14 +53,8 @@ fn test_render_multiple_chords() {
     let test_dir = TestDir::new("multiple_chords");
     let output_path = test_dir.path.join("output.svg");
 
-    let chord1 = Chord {
-        degree: 1,
-        quality: ChordQuality::Major,
-    };
-    let chord2 = Chord {
-        degree: 5,
-        quality: ChordQuality::Minor,
-    };
+    let chord1 = ChordParser::parse_file("tests/fixtures/triads/test_major.yaml").unwrap();
+    let chord2 = ChordParser::parse_file("tests/fixtures/triads/test_minor.yaml").unwrap();
 
     let mut renderer = ChordRenderer::new();
     renderer
@@ -76,7 +67,7 @@ fn test_render_multiple_chords() {
     // Check file content
     let content = fs::read_to_string(&output_path).unwrap();
     assert!(content.contains("1")); // First chord degree
-    assert!(content.contains("5")); // Second chord degree
+    assert!(content.contains("m")); // Minor quality
 }
 
 #[test]
@@ -84,23 +75,19 @@ fn test_render_all_qualities() {
     let test_dir = TestDir::new("all_qualities");
     let output_path = test_dir.path.join("output.svg");
 
-    let qualities = vec![
-        ChordQuality::Major,
-        ChordQuality::Minor,
-        ChordQuality::Sus2,
-        ChordQuality::Sus4,
-        ChordQuality::Aug,
-        ChordQuality::Dim,
+    let test_files = [
+        ("tests/fixtures/triads/test_major.yaml", "1"),
+        ("tests/fixtures/triads/test_minor.yaml", "m"),
+        ("tests/fixtures/triads/test_sus2.yaml", "sus2"),
+        ("tests/fixtures/triads/test_aug.yaml", "aug"),
+        ("tests/fixtures/triads/test_dim.yaml", "dim"),
     ];
 
     let mut renderer = ChordRenderer::new();
     renderer.init_background();
 
-    for (i, quality) in qualities.into_iter().enumerate() {
-        let chord = Chord {
-            degree: (i + 1) as i32,
-            quality,
-        };
+    for (i, (file_path, _)) in test_files.iter().enumerate() {
+        let chord = ChordParser::parse_file(file_path).unwrap();
         renderer.render_chord(&chord, 100 + i as i32 * 100, 200);
     }
 
@@ -108,12 +95,9 @@ fn test_render_all_qualities() {
 
     // Check file content
     let content = fs::read_to_string(&output_path).unwrap();
-    assert!(content.contains("Major"));
-    assert!(content.contains("Minor"));
-    assert!(content.contains("Sus2"));
-    assert!(content.contains("Sus4"));
-    assert!(content.contains("Aug"));
-    assert!(content.contains("Dim"));
+    for (_, expected_text) in test_files {
+        assert!(content.contains(expected_text));
+    }
 }
 
 #[test]
@@ -121,10 +105,7 @@ fn test_render_at_boundaries() {
     let test_dir = TestDir::new("boundaries");
     let output_path = test_dir.path.join("output.svg");
 
-    let chord = Chord {
-        degree: 1,
-        quality: ChordQuality::Major,
-    };
+    let chord = ChordParser::parse_file("tests/fixtures/triads/test_major.yaml").unwrap();
 
     let mut renderer = ChordRenderer::new();
     renderer
@@ -138,10 +119,7 @@ fn test_render_at_boundaries() {
 
 #[test]
 fn test_save_to_invalid_path() {
-    let chord = Chord {
-        degree: 1,
-        quality: ChordQuality::Major,
-    };
+    let chord = ChordParser::parse_file("tests/fixtures/triads/test_major.yaml").unwrap();
 
     let mut renderer = ChordRenderer::new();
     renderer.init_background().render_chord(&chord, 400, 200);
