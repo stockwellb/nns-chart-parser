@@ -1,16 +1,21 @@
-use crate::chord::Chord;
+use crate::chord::{Chord, ChordQuality};
 use anyhow::Result;
-use serde_yaml;
-use svg::node::element::{Circle, Group, Rectangle, Text};
+use svg::node::element::{Group, Rectangle, Text};
 use svg::node::Text as TextNode;
 use svg::Document;
 
 pub const SVG_WIDTH: i32 = 800;
 pub const SVG_HEIGHT: i32 = 400;
-pub const CIRCLE_RADIUS: i32 = 30;
+
+#[derive(Clone, Copy)]
+pub enum NotationType {
+    Regular,
+    Compact,
+}
 
 pub struct ChordRenderer {
     document: Document,
+    notation_type: NotationType,
 }
 
 impl ChordRenderer {
@@ -20,7 +25,22 @@ impl ChordRenderer {
             .set("height", SVG_HEIGHT)
             .set("viewBox", (0, 0, SVG_WIDTH, SVG_HEIGHT));
 
-        Self { document }
+        Self {
+            document,
+            notation_type: NotationType::Regular,
+        }
+    }
+
+    pub fn with_notation(notation_type: NotationType) -> Self {
+        let document = Document::new()
+            .set("width", SVG_WIDTH)
+            .set("height", SVG_HEIGHT)
+            .set("viewBox", (0, 0, SVG_WIDTH, SVG_HEIGHT));
+
+        Self {
+            document,
+            notation_type,
+        }
     }
 
     pub fn render_chord(&mut self, chord: &Chord, x: i32, y: i32) -> &mut Self {
@@ -42,55 +62,35 @@ impl ChordRenderer {
         self
     }
 
+    fn quality_to_string(&self, quality: &ChordQuality) -> String {
+        match (quality, self.notation_type) {
+            (ChordQuality::Major, _) => String::new(),
+            (ChordQuality::Minor, NotationType::Regular) => "m".to_string(),
+            (ChordQuality::Minor, NotationType::Compact) => "-".to_string(),
+            (ChordQuality::Sus2, _) => "sus2".to_string(),
+            (ChordQuality::Sus4, _) => "sus4".to_string(),
+            (ChordQuality::Aug, NotationType::Regular) => "aug".to_string(),
+            (ChordQuality::Aug, NotationType::Compact) => "+".to_string(),
+            (ChordQuality::Dim, NotationType::Regular) => "dim".to_string(),
+            (ChordQuality::Dim, NotationType::Compact) => "º".to_string(),
+        }
+    }
+
     fn create_chord_group(&self, chord: &Chord, x: i32, y: i32) -> Group {
         let mut group = Group::new();
 
-        // Draw circle for the chord
-        let circle = Circle::new()
-            .set("cx", x)
-            .set("cy", y)
-            .set("r", CIRCLE_RADIUS)
-            .set("fill", "none")
-            .set("stroke", "black")
-            .set("stroke-width", 2);
-
-        // Add text for degree
-        let degree_text = Text::new()
+        // Create text element for the chord
+        let chord_text = format!("{}{}", chord.degree, self.quality_to_string(&chord.quality));
+        let text = Text::new()
             .set("x", x)
             .set("y", y)
             .set("text-anchor", "middle")
             .set("dominant-baseline", "middle")
             .set("font-family", "Arial")
             .set("font-size", 20)
-            .add(TextNode::new(chord.degree.to_string()));
+            .add(TextNode::new(chord_text));
 
-        // Add text for quality
-        let quality_str = serde_yaml::to_string(&chord.quality)
-            .unwrap_or_else(|_| "Unknown".to_string())
-            .trim()
-            .to_string();
-
-        let quality_str = quality_str
-            .chars()
-            .enumerate()
-            .map(|(i, c)| {
-                if i == 0 {
-                    c.to_uppercase().next().unwrap_or(c)
-                } else {
-                    c
-                }
-            })
-            .collect::<String>();
-
-        let quality_text = Text::new()
-            .set("x", x)
-            .set("y", y + CIRCLE_RADIUS + 20)
-            .set("text-anchor", "middle")
-            .set("font-family", "Arial")
-            .set("font-size", 14)
-            .add(TextNode::new(quality_str));
-
-        group = group.add(circle).add(degree_text).add(quality_text);
+        group = group.add(text);
         group
     }
 }
