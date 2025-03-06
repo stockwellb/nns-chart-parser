@@ -26,6 +26,7 @@ fn test_parse_all_qualities() -> Result<()> {
         ("tests/fixtures/triads/test_major.yaml", ChordQuality::Major),
         ("tests/fixtures/triads/test_minor.yaml", ChordQuality::Minor),
         ("tests/fixtures/triads/test_sus2.yaml", ChordQuality::Sus2),
+        ("tests/fixtures/triads/test_sus4.yaml", ChordQuality::Sus4),
         ("tests/fixtures/triads/test_aug.yaml", ChordQuality::Aug),
         ("tests/fixtures/triads/test_dim.yaml", ChordQuality::Dim),
     ];
