@@ -1,13 +1,18 @@
 use crate::chord::{Chord, ChordQuality};
+use crate::line::{Line, LineElement, RepeatSign};
 use crate::measure::Measure;
 use anyhow::Result;
-use svg::node::element::{Group, Rectangle, Text};
+use svg::node::element::{Circle, Group, Line as SvgLine, Rectangle, Text};
 use svg::node::Text as TextNode;
 use svg::Document;
 
 pub const SVG_WIDTH: i32 = 800;
 pub const SVG_HEIGHT: i32 = 400;
 pub const CHORD_SPACING: i32 = 100;
+pub const LINE_HEIGHT: i32 = 100;
+pub const REPEAT_DOT_SPACING: i32 = 6;
+pub const REPEAT_LINE_SPACING: i32 = 3;
+pub const SPACER_DOT_RADIUS: i32 = 3;
 
 #[derive(Clone, Copy)]
 pub enum NotationType {
@@ -57,6 +62,86 @@ impl ChordRenderer {
             self.render_chord(chord, current_x, y);
             current_x += CHORD_SPACING;
         }
+        self
+    }
+
+    pub fn render_line(&mut self, line: &Line, x: i32, y: i32) -> &mut Self {
+        let mut current_x = x;
+
+        for element in &line.line {
+            match element {
+                LineElement::Measure { measure } => {
+                    let measure = Measure::from(measure.clone());
+                    self.render_measure(&measure, current_x, y);
+                    current_x += CHORD_SPACING * measure.get_chords().len() as i32;
+                }
+                LineElement::Repeat { repeat } => {
+                    self.render_repeat(repeat, current_x, y);
+                    current_x += CHORD_SPACING / 2; // Half spacing for repeats
+                }
+                LineElement::Spacer => {
+                    self.render_spacer(current_x, y);
+                    current_x += CHORD_SPACING / 2; // Half spacing for spacers
+                }
+            }
+        }
+        self
+    }
+
+    pub fn render_repeat(&mut self, repeat_type: &RepeatSign, x: i32, y: i32) -> &mut Self {
+        let mut group = Group::new();
+        let center_y = y;
+
+        // Add two vertical lines
+        let line1 = SvgLine::new()
+            .set("x1", x)
+            .set("y1", center_y - LINE_HEIGHT / 3)
+            .set("x2", x)
+            .set("y2", center_y + LINE_HEIGHT / 3)
+            .set("stroke", "black")
+            .set("stroke-width", 2);
+
+        let line2 = SvgLine::new()
+            .set("x1", x + REPEAT_LINE_SPACING)
+            .set("y1", center_y - LINE_HEIGHT / 3)
+            .set("x2", x + REPEAT_LINE_SPACING)
+            .set("y2", center_y + LINE_HEIGHT / 3)
+            .set("stroke", "black")
+            .set("stroke-width", 2);
+
+        group = group.add(line1).add(line2);
+
+        // Add dots based on repeat type
+        let dot_x = match repeat_type {
+            RepeatSign::Begin => x + REPEAT_LINE_SPACING + REPEAT_DOT_SPACING,
+            RepeatSign::End => x - REPEAT_DOT_SPACING,
+        };
+
+        let dot1 = Circle::new()
+            .set("cx", dot_x)
+            .set("cy", center_y - REPEAT_DOT_SPACING)
+            .set("r", 2)
+            .set("fill", "black");
+
+        let dot2 = Circle::new()
+            .set("cx", dot_x)
+            .set("cy", center_y + REPEAT_DOT_SPACING)
+            .set("r", 2)
+            .set("fill", "black");
+
+        group = group.add(dot1).add(dot2);
+        self.document = self.document.clone().add(group);
+        self
+    }
+
+    pub fn render_spacer(&mut self, x: i32, y: i32) -> &mut Self {
+        let dot = Circle::new()
+            .set("cx", x)
+            .set("cy", y)
+            .set("r", SPACER_DOT_RADIUS)
+            .set("fill", "black");
+
+        self.document = self.document.clone().add(dot);
         self
     }
 

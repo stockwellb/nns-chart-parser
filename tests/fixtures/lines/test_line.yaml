@@ -1,20 +1,23 @@
 ---
-measures:
-  - chord:
+line:
+  - type: repeat
+    content: begin
+  - type: measure
+    content:
       - chord:
           degree: 1
           quality: major
       - chord:
           degree: 4
           quality: major
-  - chord:
-      - chord:
-          degree: -2
-          quality: minor
+  - type: spacer
+  - type: measure
+    content:
       - chord:
           degree: 5
           quality: major
-  - chord:
       - chord:
-          degree: 4
+          degree: 1
           quality: major
+  - type: repeat
+    content: end

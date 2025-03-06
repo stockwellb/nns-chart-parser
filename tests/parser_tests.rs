@@ -1,6 +1,6 @@
 use anyhow::Result;
 use nns_chart_parser::{
-    chord::{Chord, ChordQuality},
+    chord::ChordQuality,
     parser::{ChordParser, MeasureCollectionParser, MeasureParser},
 };
 

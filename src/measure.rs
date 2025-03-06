@@ -1,18 +1,18 @@
 use crate::chord::Chord;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 struct ChordWrapper {
     chord: Chord,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Measure {
-    #[serde(rename = "measure")]
+    #[serde(rename = "chord")]
     chords: Vec<ChordWrapper>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MeasureCollection {
     pub measures: Vec<Measure>,
 }

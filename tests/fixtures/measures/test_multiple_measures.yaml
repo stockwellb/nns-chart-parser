@@ -1,6 +1,6 @@
 ---
 measures:
-  - measure:
+  - chord:
       - chord:
           degree: 1
           quality: major
@@ -10,7 +10,7 @@ measures:
       - chord:
           degree: 5
           quality: major
-  - measure:
+  - chord:
       - chord:
           degree: 6
           quality: minor
@@ -23,7 +23,7 @@ measures:
       - chord:
           degree: 1
           quality: major
-  - measure:
+  - chord:
       - chord:
           degree: 4
           quality: major
